@@ -1,60 +1,59 @@
-
 name: Build Wonpay Android APK
 
 on:
-  workflow_dispatch:
-  push:
-    branches: ["**"]
+workflow_dispatch:
+push:
+branches: ["**"]
 
 permissions:
-  contents: read
+contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
+build:
+runs-on: ubuntu-latest
+timeout-minutes: 45
 
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
+steps:
+  - name: Checkout source
+    uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
+  - name: Set up Node.js
+    uses: actions/setup-node@v4
+    with:
+      node-version: "20"
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-          cache: gradle
+  - name: Set up Java
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: "17"
+      cache: gradle
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v4
+  - name: Set up Android SDK
+    uses: android-actions/setup-android@v4
 
-      - name: Install Android build packages
-        run: |
-          yes | sdkmanager --licenses
-          sdkmanager \
-            "platform-tools" \
-            "platforms;android-35" \
-            "build-tools;35.0.0" \
-            "ndk;27.1.12297006"
+  - name: Install Android build packages
+    run: |
+      yes | sdkmanager --licenses
+      sdkmanager \
+        "platform-tools" \
+        "platforms;android-35" \
+        "build-tools;35.0.0" \
+        "ndk;27.1.12297006"
 
-      - name: Install JavaScript dependencies
-        run: node .yarn/releases/yarn-4.1.1.cjs install --immutable
+  - name: Install JavaScript dependencies
+    run: node .yarn/releases/yarn-4.1.1.cjs install --immutable
 
-      - name: Build debug APK
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+  - name: Build standalone APK
+    run: |
+      cd android
+      chmod +x gradlew
+      ./gradlew assembleRelease --no-daemon
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: wonpay-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
-          retention-days: 7
+  - name: Upload APK
+    uses: actions/upload-artifact@v4
+    with:
+      name: wonpay-standalone-apk
+      path: android/app/build/outputs/apk/release/app-release.apk
+      if-no-files-found: error
+      retention-days: 7
